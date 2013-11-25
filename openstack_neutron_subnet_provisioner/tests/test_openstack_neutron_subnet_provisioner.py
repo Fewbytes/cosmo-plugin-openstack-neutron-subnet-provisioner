@@ -1,5 +1,4 @@
 # vim: ts=4 sw=4 et
-import argparse
 import json
 import logging
 import random
@@ -54,7 +53,4 @@ class OpenstackSubnetProvisionerTestCase(unittest.TestCase):
         self.assertIsNone(sn)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    args = parser.parse_args()
-
     unittest.main()
