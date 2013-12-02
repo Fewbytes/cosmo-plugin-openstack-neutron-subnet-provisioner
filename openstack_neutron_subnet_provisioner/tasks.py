@@ -1,6 +1,6 @@
 # vim: ts=4 sw=4 et
 
-# Generic
+# Standard
 import copy
 import json
 import os
@@ -12,8 +12,11 @@ from celery import task
 import keystoneclient.v2_0.client as ksclient
 from neutronclient.neutron import client
 
+# Cosmo
+from cosmo.events import send_event, get_cosmo_properties
+
 @task
-def provision(network_name, subnet, **kwargs):
+def provision(__cloudify_id, network_name, subnet, **kwargs):
     neutron_client = _init_client()
     n = _get_network_by_name_or_fail(neutron_client, network_name)
     if _get_subnet_by_name(neutron_client, subnet['name']):
@@ -23,10 +26,12 @@ def provision(network_name, subnet, **kwargs):
     s = copy.deepcopy(subnet)
     s['network_id'] = n['id']
 
-    print("XXX 1")
     o = neutron_client.create_subnet({'subnet': s})
-    print("XXX 2")
-    print(o)
+    # print(o)
+    # XXX: not really a host, signifies event origin name for riemann
+    host = get_cosmo_properties()['ip']
+    # TODO: change host to "subnet-NAME"
+    send_event(__cloudify_id, host, "subnet status", "state", "running")
 
 @task
 def terminate(subnet, **kwargs):
